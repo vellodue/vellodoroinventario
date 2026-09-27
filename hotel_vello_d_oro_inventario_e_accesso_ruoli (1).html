@@ -1,1339 +1,692 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotel Vello d'Oro - Gestione Inventario & Ruoli</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Font: Playfair Display & Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        terracotta: {
-                            50: '#FDF7F5',
-                            100: '#FAF0EB',
-                            500: '#C85A32',
-                            600: '#B24B25',
-                            700: '#943B1B',
-                        },
-                        navy: {
-                            800: '#1E293B',
-                            900: '#0F172A',
-                        },
-                        gold: {
-                            400: '#E6C659',
-                            500: '#D4AF37',
-                            600: '#B89223',
-                        },
-                        marble: '#F8F6F0'
-                    },
-                    fontFamily: {
-                        serif: ['Playfair Display', 'serif'],
-                        sans: ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            background-color: #F8F6F0;
-            font-family: 'Inter', sans-serif;
-        }
-        .sidebar-transition {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .modal-blur {
-            backdrop-filter: blur(4px);
-        }
-        /* Custom scrollbars */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #F1F5F9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #CBD5E1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94A3B8;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventario & Gestione - Hotel Vello d'Oro *** Taormina</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --terracotta: #C85A32;
+      --navy: #1B2A4A;
+      --gold: #D4AF37;
+      --cream: #FAF6F0;
+      --light-gray: #F4F6F8;
+    }
+
+    body {
+      background-color: var(--light-gray);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+    }
+
+    /* Navbar & Branding */
+    .bg-vello-navy {
+      background-color: var(--navy) !important;
+    }
+    .text-gold {
+      color: var(--gold) !important;
+    }
+    .brand-logo-btn {
+      background: transparent;
+      border: none;
+      color: white;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      padding: 0;
+    }
+    .brand-logo-btn:hover {
+      opacity: 0.9;
+    }
+
+    /* Left Drawer Offcanvas Sidebar */
+    .offcanvas-vello {
+      background-color: var(--navy);
+      color: white;
+      width: 320px !important;
+    }
+    .offcanvas-vello .btn-close {
+      filter: invert(1);
+    }
+    .sidebar-link {
+      color: rgba(255, 255, 255, 0.85);
+      text-decoration: none;
+      padding: 10px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      transition: all 0.2s ease;
+    }
+    .sidebar-link:hover, .sidebar-link.active {
+      background-color: rgba(212, 175, 55, 0.2);
+      color: var(--gold);
+    }
+    .sidebar-submenu {
+      padding-left: 20px;
+      font-size: 0.9rem;
+    }
+
+    /* Cards & Values */
+    .card-vello {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      background-color: white;
+    }
+    .badge-reorder {
+      background-color: #ffc107;
+      color: #000;
+    }
+    .badge-out {
+      background-color: #dc3545;
+      color: white;
+    }
+    .badge-ok {
+      background-color: #198754;
+      color: white;
+    }
+
+    /* Commercial Value Subgroup Banner */
+    .subgroup-val-banner {
+      background-color: #eef2f7;
+      border-left: 4px solid var(--terracotta);
+      padding: 12px 18px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+    }
+
+    /* Login Screen Overlay */
+    #loginOverlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, var(--navy) 0%, #0d1526 100%);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    /* Interactive Action Buttons */
+    .btn-withdraw {
+      background-color: var(--terracotta);
+      color: white;
+      border: none;
+    }
+    .btn-withdraw:hover {
+      background-color: #a84624;
+      color: white;
+    }
+  </style>
 </head>
-<body class="text-slate-800 min-h-screen flex flex-col antialiased">
+<body>
 
-    <!-- Top Navigation Bar -->
-    <header class="bg-navy-900 text-white shadow-md sticky top-0 z-30 border-b border-gold-500/20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
-                
-                <!-- Left: Hotel Logo & Quick Menu Toggle Button -->
-                <div class="flex items-center space-x-3">
-                    <button id="toggle-sidebar-btn" onclick="toggleSidebar()" class="flex items-center space-x-3 group focus:outline-none focus:ring-2 focus:ring-gold-500 rounded-lg p-1.5 transition-all hover:bg-slate-800/80">
-                        <div class="w-11 h-11 rounded-full bg-gradient-to-br from-gold-400 to-terracotta-500 flex items-center justify-center text-navy-900 font-bold text-xl shadow-lg group-hover:scale-105 transition-transform">
-                            <i class="fa-solid me-0.5 fa-hotel text-navy-900"></i>
-                        </div>
-                        <div class="text-left">
-                            <div class="flex items-center space-x-2">
-                                <span class="font-serif text-lg sm:text-xl font-bold tracking-wide text-gold-400 group-hover:text-amber-300 transition-colors">Hotel Vello d'Oro</span>
-                                <span class="bg-terracotta-500/30 text-terracotta-100 text-xs px-2 py-0.5 rounded-full border border-terracotta-500/40 font-mono">Taormina</span>
-                            </div>
-                            <p class="text-xs text-slate-300 flex items-center gap-1 font-medium">
-                                <i class="fa-solid fa-bars text-gold-500 text-[10px]"></i> Clicca per Aprire Menu
-                            </p>
-                        </div>
-                    </button>
-                </div>
-
-                <!-- Center: Global Search Bar -->
-                <div class="hidden md:flex flex-1 max-w-md mx-6">
-                    <div class="relative w-full">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                        </span>
-                        <input id="global-search" type="text" oninput="handleSearch(this.value)" placeholder="Cerca articoli, riparazioni, codici o reparti..." class="w-full pl-10 pr-4 py-2 bg-slate-800/80 border border-slate-700 text-slate-100 placeholder-slate-400 rounded-xl focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 text-sm transition-all">
-                    </div>
-                </div>
-
-                <!-- Right: Actions, Active User & Login/Logout -->
-                <div class="flex items-center space-x-3">
-                    <button onclick="openAddItemModal()" class="hidden sm:inline-flex items-center space-x-2 bg-gradient-to-r from-terracotta-500 to-terracotta-600 hover:from-terracotta-600 hover:to-terracotta-700 text-white font-medium text-sm px-3.5 py-2 rounded-xl shadow-md transition-all active:scale-95">
-                        <i class="fa-solid fa-plus text-xs"></i>
-                        <span>Aggiungi Articolo</span>
-                    </button>
-
-                    <div id="user-badge-container" class="flex items-center pl-2 border-l border-slate-700">
-                        <!-- User badge injected via JS -->
-                    </div>
-                </div>
-            </div>
+  <!-- LOGIN OVERLAY -->
+  <div id="loginOverlay">
+    <div class="login-card text-center">
+      <div class="mb-3">
+        <i class="fa-solid fa-hotel text-gold fa-3x mb-2"></i>
+        <h3 class="fw-bold text-navy" style="color: var(--navy)">HOTEL VELLO D'ORO</h3>
+        <p class="text-muted small">Taormina ★★★ — Inventario & Servizi</p>
+      </div>
+      <form id="loginForm" onsubmit="event.preventDefault(); handleLogin();">
+        <div class="form-floating mb-3 text-start">
+          <input type="text" class="form-control" id="loginUsername" placeholder="Username" required>
+          <label for="loginUsername"><i class="fa-solid fa-user me-2"></i>Nome Utente</label>
         </div>
-    </header>
+        <div class="form-floating mb-3 text-start">
+          <input type="password" class="form-control" id="loginPassword" placeholder="Password" required>
+          <label for="loginPassword"><i class="fa-solid fa-key me-2"></i>Password</label>
+        </div>
+        <div id="loginError" class="alert alert-danger p-2 small d-none">Credenziali non valide.</div>
+        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold" style="background-color: var(--navy); border: none;">
+          Accedi al Sistema
+        </button>
+      </form>
+      <div class="mt-3 text-muted x-small" style="font-size: 0.78rem;">
+        <span>Demo Admin: <strong>admin</strong> / <strong>vellodoro2026</strong></span><br>
+        <span>Demo Staff: <strong>staff</strong> / <strong>taormina</strong></span>
+      </div>
+    </div>
+  </div>
 
-    <!-- Sidebar Overlay backdrop -->
-    <div id="sidebar-overlay" onclick="closeSidebar()" class="fixed inset-0 bg-slate-900/60 z-40 hidden modal-blur transition-opacity duration-300"></div>
+  <!-- MAIN TOP NAVBAR -->
+  <nav class="navbar navbar-dark bg-vello-navy sticky-top shadow-sm px-3">
+    <div class="container-fluid p-0">
+      
+      <!-- LOGO / DRAWER TRIGGER -->
+      <button class="brand-logo-btn" data-bs-toggle="offcanvas" data-bs-target="#leftSidebar">
+        <i class="fa-solid fa-bars fa-lg text-gold me-1"></i>
+        <i class="fa-solid fa-hotel text-gold fa-2x"></i>
+        <div>
+          <div class="fw-bold lh-1 fs-5 text-white">HOTEL VELLO D'ORO</div>
+          <div class="text-gold x-small fw-semibold" style="font-size:0.7rem; letter-spacing:1px;">TAORMINA ★★★</div>
+        </div>
+      </button>
 
-    <!-- Left Sidebar Drawer -->
-    <aside id="left-sidebar" class="fixed top-0 left-0 w-80 max-w-[85vw] h-full bg-navy-900 text-slate-100 z-50 transform -translate-x-full sidebar-transition shadow-2xl flex flex-col border-r border-gold-500/20">
+      <!-- USER PROFILE & QUICK ACTIONS -->
+      <div class="d-flex align-items-center gap-3">
+        <div class="text-end d-none d-md-block text-white">
+          <div class="fw-bold small" id="navUserName">Utente</div>
+          <span class="badge bg-warning text-dark x-small" id="navUserRole">Ruolo</span>
+        </div>
+
+        <button class="btn btn-outline-light btn-sm admin-only" onclick="openNewItemModal()">
+          <i class="fa-solid fa-plus me-1"></i> Nuovo Oggetto
+        </button>
+
+        <button class="btn btn-outline-danger btn-sm" onclick="handleLogout()" title="Esci">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+
+    </div>
+  </nav>
+
+  <!-- LEFT DRAWER MENU (OFFCANVAS) -->
+  <div class="offcanvas offcanvas-start offcanvas-vello" tabindex="-1" id="leftSidebar">
+    <div class="offcanvas-header border-bottom border-secondary">
+      <h5 class="offcanvas-title text-gold fw-bold">
+        <i class="fa-solid fa-compass me-2"></i>Navigazione Reparti
+      </h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body d-flex flex-column justify-content-between">
+      <div>
+        <!-- Nav Items -->
+        <a href="#" class="sidebar-link active" onclick="switchCategory('ALL')">
+          <span><i class="fa-solid fa-border-all me-2"></i>Tutti i Reparti</span>
+          <span class="badge bg-secondary" id="badgeCountAll">0</span>
+        </a>
+
+        <div class="mt-3 text-gold x-small fw-bold px-2 text-uppercase">Reparti Hotel</div>
         
-        <!-- Sidebar Header -->
-        <div class="p-5 border-b border-slate-800 bg-slate-950/60 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gold-400 to-terracotta-500 flex items-center justify-center text-navy-900 font-bold text-lg shadow">
-                    <i class="fa-solid fa-hotel"></i>
-                </div>
-                <div>
-                    <h2 class="font-serif text-lg font-bold text-gold-400 leading-tight">Vello d'Oro</h2>
-                    <p class="text-xs text-slate-400 font-medium">Menu di Navigazione</p>
-                </div>
-            </div>
-            <button onclick="closeSidebar()" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
+        <a href="#" class="sidebar-link" onclick="switchCategory('Housekeeping & Camere')">
+          <span><i class="fa-solid fa-broom me-2"></i>Housekeeping & Camere</span>
+        </a>
+        <a href="#" class="sidebar-link" onclick="switchCategory('Manutenzione & Tecnico')">
+          <span><i class="fa-solid fa-wrench me-2"></i>Manutenzione & Tecnico</span>
+        </a>
+        <a href="#" class="sidebar-link" onclick="switchCategory('Colazione & Bar Panoramico')">
+          <span><i class="fa-solid fa-mug-hot me-2"></i>Colazione & Bar</span>
+        </a>
+        <a href="#" class="sidebar-link" onclick="switchCategory('Reception & Portineria')">
+          <span><i class="fa-solid fa-concierge-bell me-2"></i>Reception & Portineria</span>
+        </a>
+
+        <div class="mt-3 text-gold x-small fw-bold px-2 text-uppercase">Filtri Rapidi</div>
+        <a href="#" class="sidebar-link text-warning" onclick="filterReorderQueue()">
+          <span><i class="fa-solid fa-triangle-exclamation me-2"></i>In Scadenza / Mancanti</span>
+          <span class="badge bg-danger" id="badgeReorderCount">0</span>
+        </a>
+        <a href="#" class="sidebar-link" onclick="openLogsModal()">
+          <span><i class="fa-solid fa-clock-rotate-left me-2"></i>Registro Attività</span>
+        </a>
+      </div>
+
+      <!-- Admin Tools Bottom -->
+      <div class="border-top border-secondary pt-3 admin-only">
+        <button class="btn btn-outline-warning w-100 btn-sm mb-2" onclick="openUserMgmtModal()">
+          <i class="fa-solid fa-users-gear me-2"></i>Gestione Utenti & Staff
+        </button>
+        <button class="btn btn-outline-light w-100 btn-sm" onclick="openSubcatMgmtModal()">
+          <i class="fa-solid fa-folder-plus me-2"></i>Gestisci Sotto-Categorie
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP CONTAINER -->
+  <div class="container-fluid p-4">
+
+    <!-- SUBGROUP VALUE BANNER -->
+    <div class="subgroup-val-banner d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div>
+        <h5 class="fw-bold mb-0 text-navy" id="currentViewTitle">Tutti i Reparti</h5>
+        <div class="text-muted small" id="currentViewSub">Visualizzazione complessiva giacenze e materiali</div>
+      </div>
+      <div class="text-end">
+        <div class="small text-muted fw-semibold">VALORE COMMERCIALE TOTALE SOTTOGRUPPO</div>
+        <div class="fs-4 fw-bold text-terracotta" id="subgroupTotalValue">€ 0.00</div>
+      </div>
+    </div>
+
+    <!-- STATS SUMMARY CARDS -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="card card-vello p-3 border-start border-4 border-primary">
+          <div class="text-muted x-small fw-bold text-uppercase">Totale Articoli</div>
+          <div class="fs-3 fw-bold" id="statTotalItems">0</div>
         </div>
-
-        <!-- Sidebar Active User Context -->
-        <div class="px-5 py-3.5 bg-slate-800/50 border-b border-slate-800 flex items-center justify-between text-xs">
-            <span class="text-slate-400">Ruolo Attivo:</span>
-            <span id="sidebar-user-role" class="font-semibold text-gold-400 bg-navy-900 px-2.5 py-1 rounded-md border border-slate-700">Amministratore</span>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card card-vello p-3 border-start border-4 border-danger">
+          <div class="text-muted x-small fw-bold text-uppercase">Da Riordinare / Mancanti</div>
+          <div class="fs-3 fw-bold text-danger" id="statReorderItems">0</div>
         </div>
-
-        <!-- Sidebar Navigation Items -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-6">
-            
-            <!-- Main Section -->
-            <div>
-                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-3 mb-2">Principale</p>
-                <nav class="space-y-1">
-                    <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="sidebar-nav-link w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
-                        <i class="fa-solid fa-chart-pie text-gold-400 w-5 text-center"></i>
-                        <span>Panoramica Dashboard</span>
-                    </button>
-                    <button onclick="navigateTo('low-stock')" id="nav-low-stock" class="sidebar-nav-link w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
-                        <div class="flex items-center space-x-3">
-                            <i class="fa-solid fa-triangle-exclamation text-amber-500 w-5 text-center"></i>
-                            <span>Materiali da Riordinare</span>
-                        </div>
-                        <span id="sidebar-low-stock-count" class="bg-amber-500/20 text-amber-300 text-xs font-bold px-2 py-0.5 rounded-full border border-amber-500/30">0</span>
-                    </button>
-                </nav>
-            </div>
-
-            <!-- Reparti & Magazzini Dropdown Section -->
-            <div>
-                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-3 mb-2">Reparti Inventario</p>
-                <nav class="space-y-1">
-                    
-                    <!-- Tutti i Reparti -->
-                    <button onclick="navigateTo('all')" id="nav-all" class="sidebar-nav-link w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
-                        <i class="fa-solid fa-boxes-stacked text-slate-400 w-5 text-center"></i>
-                        <span>Tutti i Materiali</span>
-                    </button>
-
-                    <!-- Housekeeping -->
-                    <div class="space-y-1">
-                        <button onclick="toggleSubMenu('menu-housekeeping')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
-                            <div class="flex items-center space-x-3">
-                                <i class="fa-solid fa-broom text-sky-400 w-5 text-center"></i>
-                                <span>Housekeeping & Piani</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-down text-xs text-slate-500 transition-transform" id="icon-menu-housekeeping"></i>
-                        </button>
-                        <div id="menu-housekeeping" class="pl-9 pr-2 space-y-1 hidden">
-                            <button onclick="navigateTo('housekeeping', 'all')" class="w-full text-left py-1.5 px-2 text-xs text-slate-400 hover:text-gold-400 hover:bg-slate-800/50 rounded-lg">Tutto Housekeeping</button>
-                            <button onclick="navigateTo('housekeeping', 'Detersivi e Pulizia')" class="w-full text-left py-1.5 px-2 text-xs text-slate-400 hover:text-gold-400 hover:bg-slate-800/50 rounded-lg">• Detersivi e Pulizia</button>
-                            <button onclick="navigateTo('housekeeping', 'Biancheria e Tessili')" class="w-full text-left py-1.5 px-2 text-xs text-slate-400 hover:text-gold-400 hover:bg-slate-800/50 rounded-lg">• Biancheria e Tessili</button>
-                            <button onclick="navigateTo('housekeeping', 'Set Cortesia & Monouso')" class="w-full text-left py-1.5 px-2 text-xs text-slate-400 hover:text-gold-400 hover:bg-slate-800/50 rounded-lg">• Set Cortesia & Monouso</button>
-                        </div>
-                    </div>
-
-                    <!-- Manutenzione -->
-                    <div class="space-y-1">
-                        <button onclick="toggleSubMenu('menu-manutenzione')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
-                            <div class="flex items-center space-x-3">
-                                <i class="fa-solid fa-wrench text-amber-400 w-5 text-center"></i>
-                                <span>Manutenzione & Servizi</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-down text-xs text-slate-500 transition-transform" id="icon-menu-manutenzione"></i>
-                        </button>
-                        <div id="menu-manutenzione" class="pl-9 pr-2 space-y-1 hidden">
-                            <button onclick="navigateTo('manutenzione', 'all')" class="w-full text-left py-1.5 px-2 text-xs text-slate-400 hover:text-gold-400 hover:bg-slate-800/50 rounded-lg">Tutte le Manutenzioni</button>
-                            <button onclick="navigateTo('manutenzione', 'Elettricità e Illuminazione')" class="w-full text-left py-1.5 px-2 text-xs text-slate-400 hover:text-gold-400 hover:bg-slate-800/50 rounded-lg">• Elettricità & Lampadine</button>
-                            <button onclick="navigateTo('manutenzione', 'Idraulica & Sanitari')" class="w-full text-left py-1.5 px-2 text-xs text-slate-400 hover:text-gold-400 hover:bg-slate-800/50 rounded-lg">• Idraulica & Sanitari</button>
-                            <button onclick="navigateTo('manutenzione', 'Climatizzazione & Utensili')" class="w-full text-left py-1.5 px-2 text-xs text-slate-400 hover:text-gold-400 hover:bg-slate-800/50 rounded-lg">• Climatizzazione & Hardware</button>
-                        </div>
-                    </div>
-
-                    <!-- Bar & Ristorazione -->
-                    <div class="space-y-1">
-                        <button onclick="toggleSubMenu('menu-bar')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
-                            <div class="flex items-center space-x-3">
-                                <i class="fa-solid fa-martini-glass-citrus text-emerald-400 w-5 text-center"></i>
-                                <span>Bar & Ristorazione</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-down text-xs text-slate-500 transition-transform" id="icon-menu-bar"></i>
-                        </button>
-                        <div id="menu-bar" class="pl-9 pr-2 space-y-1 hidden">
-                            <button onclick="navigateTo('bar', 'all')" class="w-full text-left py-1.5 px-2 text-xs text-slate-400 hover:text-gold-400 hover:bg-slate-800/50 rounded-lg">Tutto Bar</button>
-                            <button onclick="navigateTo('bar', 'Bevande & Caffetteria')" class="w-full text-left py-1.5 px-2 text-xs text-slate-400 hover:text-gold-400 hover:bg-slate-800/50 rounded-lg">• Bevande & Caffetteria</button>
-                            <button onclick="navigateTo('bar', 'Monouso Bar & Bicchieri')" class="w-full text-left py-1.5 px-2 text-xs text-slate-400 hover:text-gold-400 hover:bg-slate-800/50 rounded-lg">• Monouso Bar & Bicchieri</button>
-                        </div>
-                    </div>
-
-                    <!-- Reception -->
-                    <div class="space-y-1">
-                        <button onclick="toggleSubMenu('menu-reception')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
-                            <div class="flex items-center space-x-3">
-                                <i class="fa-solid fa-concierge-bell text-indigo-400 w-5 text-center"></i>
-                                <span>Reception & Cancelleria</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-down text-xs text-slate-500 transition-transform" id="icon-menu-reception"></i>
-                        </button>
-                        <div id="menu-reception" class="pl-9 pr-2 space-y-1 hidden">
-                            <button onclick="navigateTo('reception', 'all')" class="w-full text-left py-1.5 px-2 text-xs text-slate-400 hover:text-gold-400 hover:bg-slate-800/50 rounded-lg">Tutta Reception</button>
-                            <button onclick="navigateTo('reception', 'Cancelleria & Badge')" class="w-full text-left py-1.5 px-2 text-xs text-slate-400 hover:text-gold-400 hover:bg-slate-800/50 rounded-lg">• Cancelleria & Badge</button>
-                            <button onclick="navigateTo('reception', 'Stampati & Brochure')" class="w-full text-left py-1.5 px-2 text-xs text-slate-400 hover:text-gold-400 hover:bg-slate-800/50 rounded-lg">• Stampati & Brochure</button>
-                        </div>
-                    </div>
-
-                </nav>
-            </div>
-
-            <!-- Registro Attività & Admin -->
-            <div>
-                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-3 mb-2">Sistema & Registro</p>
-                <nav class="space-y-1">
-                    <button onclick="navigateTo('audit')" id="nav-audit" class="sidebar-nav-link w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
-                        <i class="fa-solid fa-clock-rotate-left text-purple-400 w-5 text-center"></i>
-                        <span>Registro Attività (Audit Log)</span>
-                    </button>
-                    <button id="nav-users" onclick="navigateTo('users')" class="sidebar-nav-link w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl font-medium text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-all">
-                        <i class="fa-solid fa-users-gear text-terracotta-500 w-5 text-center"></i>
-                        <span>Gestione Utenti / Ruoli</span>
-                    </button>
-                </nav>
-            </div>
-
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card card-vello p-3 border-start border-4 border-success">
+          <div class="text-muted x-small fw-bold text-uppercase">Uso Interno / Materiali</div>
+          <div class="fs-3 fw-bold" id="statConsumablesCount">0</div>
         </div>
-
-        <!-- Sidebar Footer -->
-        <div class="p-4 border-t border-slate-800 bg-slate-950/40 text-center text-xs text-slate-400 flex justify-between items-center">
-            <span>v2.4 - Sicilian Luxury Edition</span>
-            <button onclick="exportDataCSV()" class="text-gold-400 hover:underline flex items-center gap-1">
-                <i class="fa-solid fa-download"></i> CSV Export
-            </button>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card card-vello p-3 border-start border-4 border-warning">
+          <div class="text-muted x-small fw-bold text-uppercase">Valore Giacenza Totale</div>
+          <div class="fs-3 fw-bold text-dark" id="statTotalValue">€ 0.00</div>
         </div>
+      </div>
+    </div>
 
-    </aside>
-
-    <!-- Main Content Container -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-
-        <!-- Mobile Search Bar (visible on small screens) -->
-        <div class="md:hidden">
-            <div class="relative w-full">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                </span>
-                <input type="text" oninput="handleSearch(this.value)" placeholder="Cerca articoli, riparazioni o reparti..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 text-slate-800 placeholder-slate-400 rounded-xl focus:outline-none focus:border-terracotta-500 text-sm shadow-sm">
-            </div>
+    <!-- FILTER TOOLBAR -->
+    <div class="card card-vello p-3 mb-4">
+      <div class="row g-2 align-items-center">
+        <div class="col-12 col-md-4">
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+            <input type="text" class="form-control" id="searchInput" placeholder="Cerca oggetto, lampadina, codice..." onkeyup="renderTable()">
+          </div>
         </div>
-
-        <!-- Breadcrumb & Page Banner -->
-        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-                <div class="flex items-center space-x-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1" id="breadcrumb-area">
-                    <span>Hotel Vello d'Oro</span>
-                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
-                    <span id="breadcrumb-dept" class="text-terracotta-600">Tutti i Reparti</span>
-                    <span id="breadcrumb-sub-wrap" class="hidden"><i class="fa-solid fa-chevron-right text-[10px]"></i> <span id="breadcrumb-sub" class="text-slate-600">Tutte le categorie</span></span>
-                </div>
-                <h1 id="page-title" class="font-serif text-2xl sm:text-3xl font-bold text-navy-900 flex items-center gap-2">
-                    Panoramica Inventario
-                </h1>
-                <p id="page-description" class="text-slate-500 text-sm mt-0.5">
-                    Seleziona le sezioni dal Menu di Sinistra (clicca sul logo dell'hotel in alto).
-                </p>
-            </div>
-
-            <!-- Quick Action Toolbar -->
-            <div class="flex flex-wrap items-center gap-2.5 self-end md:self-center">
-                <button onclick="toggleConsumablesFilter()" id="btn-consumable-filter" class="inline-flex items-center space-x-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl border border-slate-300 transition-all">
-                    <i class="fa-solid fa-box-open text-amber-600"></i>
-                    <span>Solo Materiali di Consumo</span>
-                </button>
-                <button onclick="exportDataCSV()" class="inline-flex items-center space-x-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl border border-slate-300 transition-all">
-                    <i class="fa-solid fa-file-csv text-emerald-600"></i>
-                    <span>Esporta CSV</span>
-                </button>
-                <button onclick="window.print()" class="inline-flex items-center space-x-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs rounded-xl border border-slate-300 transition-all">
-                    <i class="fa-solid fa-print text-navy-800"></i>
-                    <span>Stampa Report</span>
-                </button>
-            </div>
+        <div class="col-6 col-md-3">
+          <select class="form-select" id="filterSubcategory" onchange="renderTable()">
+            <option value="ALL">Tutte le Sotto-Categorie</option>
+          </select>
         </div>
-
-        <!-- Metrics Cards Section -->
-        <div id="metrics-cards-section" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase">Totale Articoli</p>
-                    <h3 id="metric-total-items" class="text-2xl font-bold text-navy-900 mt-0.5">0</h3>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-boxes-stacked"></i>
-                </div>
-            </div>
-
-            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase">In Sottoscorta</p>
-                    <h3 id="metric-low-stock" class="text-2xl font-bold text-amber-600 mt-0.5">0</h3>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </div>
-            </div>
-
-            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase">Valore Inventario</p>
-                    <h3 id="metric-total-value" class="text-2xl font-bold text-emerald-700 mt-0.5">€0.00</h3>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-euro-sign"></i>
-                </div>
-            </div>
-
-            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-semibold text-slate-400 uppercase">Prestiti / Interventi</p>
-                    <h3 id="metric-maintenance-active" class="text-2xl font-bold text-indigo-700 mt-0.5">0</h3>
-                </div>
-                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center text-lg">
-                    <i class="fa-solid fa-screwdriver-wrench"></i>
-                </div>
-            </div>
+        <div class="col-6 col-md-3">
+          <select class="form-select" id="filterStatus" onchange="renderTable()">
+            <option value="ALL">Tutti gli Stati Stock</option>
+            <option value="OK">Giacenza Regolare</option>
+            <option value="REORDER">In Scadenza / Sotto Scorta</option>
+            <option value="OUT">Mancante / Esaurito</option>
+          </select>
         </div>
+        <div class="col-12 col-md-2 text-end">
+          <button class="btn btn-outline-secondary w-100" onclick="exportCSV()">
+            <i class="fa-solid fa-file-csv me-1"></i> Esporta CSV
+          </button>
+        </div>
+      </div>
+    </div>
 
-        <!-- Subcategory Commercial Value Aggregator Banner -->
-        <div id="subcategory-value-banner" class="bg-gradient-to-r from-navy-900 to-slate-800 text-white rounded-2xl p-4 shadow-md flex items-center justify-between border-l-4 border-gold-500">
-            <div class="flex items-center space-x-3">
-                <div class="p-2.5 bg-gold-500/20 rounded-xl text-gold-400">
-                    <i class="fa-solid fa-coins text-xl"></i>
-                </div>
-                <div>
-                    <p id="subcat-banner-title" class="text-xs font-medium text-slate-300 uppercase tracking-wider">Valore Categoria Selezionata</p>
-                    <h4 id="subcat-banner-summary" class="text-lg font-bold text-gold-400">Tutti i Reparti: 0 Pezzi - Totale: €0.00</h4>
-                </div>
+    <!-- MAIN INVENTORY TABLE -->
+    <div class="card card-vello p-0 overflow-hidden mb-4">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead class="table-light text-uppercase x-small">
+            <tr>
+              <th class="ps-3">Oggetto / Materiale</th>
+              <th>Reparto & Sotto-Categoria</th>
+              <th>Tipologia</th>
+              <th class="text-center">Giacenza</th>
+              <th class="text-center">Scorta Min.</th>
+              <th class="text-end">Valore Unit.</th>
+              <th class="text-end">Valore Totale</th>
+              <th class="text-center">Stato</th>
+              <th class="text-end pe-3">Azioni</th>
+            </tr>
+          </thead>
+          <tbody id="inventoryTableBody">
+            <!-- Dynamic Rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL: ADD / EDIT ITEM -->
+  <div class="modal fade" id="itemModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-vello-navy text-white">
+          <h5 class="modal-title" id="itemModalTitle">Nuovo Oggetto / Materiale</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="itemForm">
+            <input type="hidden" id="itemId">
+            <div class="mb-3">
+              <label class="form-label fw-bold">Nome Oggetto / Articolo *</label>
+              <input type="text" class="form-control" id="itemName" placeholder="Es. Lampadine LED GU10 5W" required>
             </div>
-            <span id="subcat-banner-tag" class="hidden sm:inline-block bg-white/10 text-xs px-3 py-1 rounded-full text-slate-200 font-mono">
-                Calcolato in tempo reale
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-bold">Reparto *</label>
+                <select class="form-select" id="itemDept" onchange="populateModalSubcats()" required>
+                  <option value="Housekeeping & Camere">Housekeeping & Camere</option>
+                  <option value="Manutenzione & Tecnico">Manutenzione & Tecnico</option>
+                  <option value="Colazione & Bar Panoramico">Colazione & Bar</option>
+                  <option value="Reception & Portineria">Reception & Portineria</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-bold">Sotto-Categoria</label>
+                <select class="form-select" id="itemSubcat">
+                  <!-- Dynamic -->
+                </select>
+              </div>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-bold">Quantità Attuale *</label>
+                <input type="number" class="form-control" id="itemQty" min="0" value="10" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-bold">Scorta Minima (Riordino) *</label>
+                <input type="number" class="form-control" id="itemMinThreshold" min="0" value="3" required>
+              </div>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-bold">Valore Commerciale Unit. (€) *</label>
+                <input type="number" step="0.01" class="form-control" id="itemPrice" value="3.00" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-bold">Uso / Destinazione</label>
+                <select class="form-select" id="itemIsConsumable">
+                  <option value="true">Uso Interno / Manutenzione</option>
+                  <option value="false">Vendita / Servizio Ospiti</option>
+                </select>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Note / Ubicazione Magazzino</label>
+              <input type="text" class="form-control" id="itemNotes" placeholder="Es. Scaffale B3 - Ripostiglio Piano 2">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+          <button type="button" class="btn btn-primary" onclick="saveItem()" style="background-color: var(--navy); border:none;">Salva Oggetto</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS BOOTSTRAP & LOGIC -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    // DEFAULT INITIAL DATA STORAGE
+    let currentUser = null;
+    let items = JSON.parse(localStorage.getItem('vello_items')) || [
+      { id: 1, name: "Lampadine LED GU10 5W", dept: "Manutenzione & Tecnico", subcat: "Materiale Elettrico", qty: 10, minThreshold: 3, price: 3.00, isConsumable: true, notes: "Scaffale A1" },
+      { id: 2, name: "Set Cortesia Agrumi Siciliani 50ml", dept: "Housekeeping & Camere", subcat: "Amenities Bagno", qty: 45, minThreshold: 50, price: 1.20, isConsumable: false, notes: "Deposito Centrale" },
+      { id: 3, name: "Caffè Miscela Etna 1kg", dept: "Colazione & Bar Panoramico", subcat: "Caffetteria & Bar", qty: 2, minThreshold: 5, price: 18.50, isConsumable: false, notes: "Dispensa Bar" }
+    ];
+
+    let users = JSON.parse(localStorage.getItem('vello_users')) || [
+      { username: "admin", role: "Amministratore", pass: "vellodoro2026", dept: "ALL" },
+      { username: "staff", role: "Staff", pass: "taormina", dept: "ALL" }
+    ];
+
+    let subcategories = JSON.parse(localStorage.getItem('vello_subcats')) || [
+      { dept: "Manutenzione & Tecnico", name: "Materiale Elettrico" },
+      { dept: "Housekeeping & Camere", name: "Amenities Bagno" },
+      { dept: "Colazione & Bar Panoramico", name: "Caffetteria & Bar" }
+    ];
+
+    let currentDeptFilter = "ALL";
+
+    // AUTHENTICATION
+    function handleLogin() {
+      const u = document.getElementById('loginUsername').value.trim();
+      const p = document.getElementById('loginPassword').value.trim();
+      const found = users.find(x => x.username === u && x.pass === p);
+
+      if (found) {
+        currentUser = found;
+        document.getElementById('loginOverlay').classList.add('d-none');
+        document.getElementById('navUserName').innerText = currentUser.username;
+        document.getElementById('navUserRole').innerText = currentUser.role;
+        
+        // Hide Admin Controls if not admin
+        if (currentUser.role !== 'Amministratore') {
+          document.querySelectorAll('.admin-only').forEach(el => el.classList.add('d-none'));
+        } else {
+          document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('d-none'));
+        }
+
+        renderApp();
+      } else {
+        document.getElementById('loginError').classList.remove('d-none');
+      }
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      document.getElementById('loginOverlay').classList.remove('d-none');
+    }
+
+    // MAIN RENDER
+    function renderApp() {
+      populateSubcatDropdowns();
+      renderTable();
+    }
+
+    function switchCategory(dept) {
+      currentDeptFilter = dept;
+      document.getElementById('currentViewTitle').innerText = dept === 'ALL' ? 'Tutti i Reparti' : dept;
+      populateSubcatDropdowns();
+      renderTable();
+
+      // Close drawer on mobile
+      const bsOffcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('leftSidebar'));
+      if (bsOffcanvas) bsOffcanvas.hide();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('inventoryTableBody');
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const subcatFilter = document.getElementById('filterSubcategory').value;
+      const statusFilter = document.getElementById('filterStatus').value;
+
+      tbody.innerHTML = '';
+      let totalSubgroupValue = 0;
+      let totalReorder = 0;
+      let totalConsumables = 0;
+      let totalValuation = 0;
+      let itemCount = 0;
+
+      items.forEach(item => {
+        // Department Filter
+        if (currentDeptFilter !== 'ALL' && item.dept !== currentDeptFilter) return;
+        // Subcat Filter
+        if (subcatFilter !== 'ALL' && item.subcat !== subcatFilter) return;
+        // Search
+        if (search && !item.name.toLowerCase().includes(search)) return;
+
+        const totalVal = item.qty * item.price;
+        totalValuation += totalVal;
+        itemCount++;
+
+        let status = 'OK';
+        if (item.qty === 0) status = 'OUT';
+        else if (item.qty <= item.minThreshold) status = 'REORDER';
+
+        if (status === 'REORDER' || status === 'OUT') totalReorder++;
+        if (item.isConsumable) totalConsumables++;
+
+        // Status Filter
+        if (statusFilter !== 'ALL' && status !== statusFilter) return;
+
+        totalSubgroupValue += totalVal;
+
+        // Render Row
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="ps-3 fw-bold text-dark">
+            ${item.name}
+            ${item.notes ? `<div class="x-small text-muted font-monospace"><i class="fa-solid fa-location-dot me-1"></i>${item.notes}</div>` : ''}
+          </td>
+          <td>
+            <span class="badge bg-light text-dark border">${item.dept}</span>
+            <div class="x-small text-muted">${item.subcat || 'Generale'}</div>
+          </td>
+          <td>
+            <span class="badge ${item.isConsumable ? 'bg-info text-dark' : 'bg-secondary'}">
+              ${item.isConsumable ? 'Uso Interno' : 'Vendita/Servizio'}
             </span>
-        </div>
-
-        <!-- Main Dynamic View Area (Inventory Table, Users, or Audit Logs) -->
-        <div id="main-view-container" class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-            <!-- Content render inside JS -->
-        </div>
-
-    </main>
-
-    <!-- Add/Edit Item Modal -->
-    <div id="item-modal" class="fixed inset-0 bg-slate-900/60 z-50 hidden modal-blur flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto border border-slate-100">
-            <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-                <h3 id="modal-item-title" class="font-serif text-xl font-bold text-navy-900">Aggiungi Nuovo Articolo / Servizio</h3>
-                <button onclick="closeItemModal()" class="text-slate-400 hover:text-slate-600 text-lg p-1">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <form id="item-form" onsubmit="saveItem(event)" class="p-6 space-y-4">
-                <input type="hidden" id="form-item-id">
-                
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Nome Articolo o Servizio *</label>
-                    <input type="text" id="form-name" required placeholder="Es. Lampadine LED E27 Warm White" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500">
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Reparto Principale *</label>
-                        <select id="form-department" onchange="updateFormSubcategories()" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500">
-                            <option value="manutenzione">Manutenzione & Servizi</option>
-                            <option value="housekeeping">Housekeeping & Piani</option>
-                            <option value="bar">Bar & Ristorazione</option>
-                            <option value="reception">Reception & Cancelleria</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Sottocategoria *</label>
-                        <select id="form-subcategory" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-terracotta-500 focus:border-terracotta-500">
-                            <!-- Populated dynamically -->
-                        </select>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Quantità Attuale *</label>
-                        <input type="number" id="form-quantity" min="0" required value="10" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-terracotta-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Scorta Minima *</label>
-                        <input type="number" id="form-min-quantity" min="0" required value="3" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-terracotta-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Prezzo Unitario (€) *</label>
-                        <input type="number" id="form-price" step="0.01" min="0" required value="3.50" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-terracotta-500">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Unità di Misura</label>
-                        <select id="form-unit" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-terracotta-500">
-                            <option value="Pezzi">Pezzi (pz)</option>
-                            <option value="Flaconi">Flaconi / Bottiglie</option>
-                            <option value="Scatole">Scatole / Pacchi</option>
-                            <option value="Litri">Litri (L)</option>
-                            <option value="Kg">Kilogrammi (Kg)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Posizione Magazzino / Piano</label>
-                        <input type="text" id="form-location" placeholder="Es. Deposito Piano -1 / Scaffale B" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-terracotta-500">
-                    </div>
-                </div>
-
-                <div class="flex items-center space-x-3 pt-2">
-                    <input type="checkbox" id="form-is-consumable" class="w-4 h-4 text-terracotta-600 border-slate-300 rounded focus:ring-terracotta-500">
-                    <label for="form-is-consumable" class="text-sm font-medium text-slate-700">Articolo di Consumo Rapido / Uso Interno (Abilita Prelievo Veloce)</label>
-                </div>
-
-                <div class="pt-4 flex justify-end space-x-3 border-t border-slate-100">
-                    <button type="button" onclick="closeItemModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50">Annulla</button>
-                    <button type="submit" class="px-5 py-2 bg-terracotta-600 hover:bg-terracotta-700 text-white rounded-xl text-sm font-semibold shadow-md">Salva Articolo</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Quick Withdraw Modal -->
-    <div id="withdraw-modal" class="fixed inset-0 bg-slate-900/60 z-50 hidden modal-blur flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full border border-slate-100">
-            <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-                <h3 class="font-serif text-lg font-bold text-navy-900">Prelievo / Consumo Materiale</h3>
-                <button onclick="closeWithdrawModal()" class="text-slate-400 hover:text-slate-600 text-lg">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-            <form id="withdraw-form" onsubmit="confirmWithdrawal(event)" class="p-5 space-y-4">
-                <input type="hidden" id="withdraw-item-id">
-                <div class="bg-amber-50 p-3 rounded-xl border border-amber-200">
-                    <p class="text-xs font-semibold text-amber-800 uppercase">Articolo Selezionato:</p>
-                    <p id="withdraw-item-name" class="text-sm font-bold text-slate-800 mt-0.5">---</p>
-                    <p id="withdraw-item-stock" class="text-xs text-slate-600 mt-1">Disponibilità attuale: 0 pz</p>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Quantità da Prelevare</label>
-                    <input type="number" id="withdraw-qty" min="1" value="1" required class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-terracotta-500">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Destinazione / Note dell'Uso</label>
-                    <input type="text" id="withdraw-notes" placeholder="Es. Camera 304, Pulizia Bar, Sostituzione Bagno..." class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-terracotta-500">
-                </div>
-
-                <div class="pt-3 flex justify-end space-x-3">
-                    <button type="button" onclick="closeWithdrawModal()" class="px-4 py-2 border border-slate-300 text-slate-700 rounded-xl text-sm font-medium">Annulla</button>
-                    <button type="submit" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-semibold shadow">Conferma Prelievo</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-5 right-5 z-50 translate-y-20 opacity-0 transition-all duration-300 bg-navy-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-3 border border-gold-500/30 max-w-md">
-        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
-        <span id="toast-msg" class="text-xs font-medium">Operazione completata con successo</span>
-    </div>
-
-    <script>
-        /* Default Subcategories Map */
-        const SUBCATEGORIES = {
-            manutenzione: [
-                'Elettricità e Illuminazione',
-                'Idraulica & Sanitari',
-                'Climatizzazione & Utensili',
-                'Edilizia & Vernici'
-            ],
-            housekeeping: [
-                'Detersivi e Pulizia',
-                'Biancheria e Tessili',
-                'Set Cortesia & Monouso',
-                'Accessori Camere'
-            ],
-            bar: [
-                'Bevande & Caffetteria',
-                'Monouso Bar & Bicchieri',
-                'Pulizia Specifiche Bar'
-            ],
-            reception: [
-                'Cancelleria & Badge',
-                'Stampati & Brochure',
-                'Accessori Accoglienza'
-            ]
-        };
-
-        /* Users & Roles Definition */
-        const USERS = [
-            { id: 1, name: 'Giuseppe (Admin)', role: 'Admin', badge: 'bg-terracotta-500 text-white' },
-            { id: 2, name: 'Salvatore (Manutenzione)', role: 'Manutenzione', badge: 'bg-amber-500 text-white' },
-            { id: 3, name: 'Maria (Housekeeping)', role: 'Housekeeping', badge: 'bg-sky-500 text-white' },
-            { id: 4, name: 'Carmelo (Bar)', role: 'Bar', badge: 'bg-emerald-500 text-white' },
-            { id: 5, name: 'Elena (Reception)', role: 'Reception', badge: 'bg-indigo-500 text-white' }
-        ];
-
-        /* Default Initial Inventory Items */
-        const DEFAULT_ITEMS = [
-            { id: 'item-101', name: 'Lampadine LED Warm E27 10W', department: 'manutenzione', subcategory: 'Elettricità e Illuminazione', quantity: 15, minQuantity: 5, price: 3.50, unit: 'Pezzi', location: 'Deposito Piano -1', isConsumable: true },
-            { id: 'item-102', name: 'Cavo Idraulico Flessibile 1/2"', department: 'manutenzione', subcategory: 'Idraulica & Sanitari', quantity: 2, minQuantity: 4, price: 12.00, unit: 'Pezzi', location: 'Magazzino Tecnico', isConsumable: false },
-            { id: 'item-103', name: 'Detergente Multiuso Sgrassante 5L', department: 'housekeeping', subcategory: 'Detersivi e Pulizia', quantity: 8, minQuantity: 3, price: 18.50, unit: 'Flaconi', location: 'Officina Housekeeping', isConsumable: true },
-            { id: 'item-104', name: 'Set Lenzuola Matrimoniali Cotone Extra', department: 'housekeeping', subcategory: 'Biancheria e Tessili', quantity: 45, minQuantity: 15, price: 28.00, unit: 'Pezzi', location: 'Guardaroba Centrale', isConsumable: false },
-            { id: 'item-105', name: 'Flaconcini Shampoo Agrumi di Sicilia 50ml', department: 'housekeeping', subcategory: 'Set Cortesia & Monouso', quantity: 250, minQuantity: 50, price: 0.65, unit: 'Pezzi', location: 'Scaffale B2', isConsumable: true },
-            { id: 'item-106', name: 'Caffè in Grani Etna Blend 1Kg', department: 'bar', subcategory: 'Bevande & Caffetteria', quantity: 12, minQuantity: 4, price: 22.00, unit: 'Kg', location: 'Dispensa Bar', isConsumable: true },
-            { id: 'item-107', name: 'Bicchieri Cocktail Cristallo', department: 'bar', subcategory: 'Monouso Bar & Bicchieri', quantity: 60, minQuantity: 20, price: 4.50, unit: 'Pezzi', location: 'Scaffale Bar', isConsumable: false },
-            { id: 'item-108', name: 'CARTA A4 Riso Bianco 500fg', department: 'reception', subcategory: 'Cancelleria & Badge', quantity: 3, minQuantity: 5, price: 4.80, unit: 'Scatole', location: 'Ufficio Reception', isConsumable: true },
-            { id: 'item-109', name: 'Mappe Turistiche Taormina Stampate', department: 'reception', subcategory: 'Stampati & Brochure', quantity: 500, minQuantity: 100, price: 0.20, unit: 'Pezzi', location: 'Banco Front Desk', isConsumable: true }
-        ];
-
-        /* Application State */
-        let inventory = [];
-        let auditLogs = [];
-        let currentUser = USERS[0]; // Admin by default
-        let currentDept = 'all'; // 'all', 'housekeeping', 'manutenzione', 'bar', 'reception', 'audit', 'users', 'low-stock', 'dashboard'
-        let currentSubcategory = 'all';
-        let searchQuery = '';
-        let filterOnlyConsumable = false;
-
-        /* Initialize Application */
-        window.onload = function() {
-            loadFromLocalStorage();
-            renderUserBadge();
-            renderMainView();
-            updateLowStockBadge();
-        };
-
-        /* LocalStorage Persistence */
-        function loadFromLocalStorage() {
-            const savedItems = localStorage.getItem('vello_inventory_items');
-            if (savedItems) {
-                inventory = JSON.parse(savedItems);
-            } else {
-                inventory = [...DEFAULT_ITEMS];
-                saveToLocalStorage();
-            }
-
-            const savedLogs = localStorage.getItem('vello_inventory_logs');
-            if (savedLogs) {
-                auditLogs = JSON.parse(savedLogs);
-            } else {
-                auditLogs = [{
-                    id: Date.now(),
-                    timestamp: new Date().toLocaleString('it-IT'),
-                    user: 'Sistema',
-                    role: 'Admin',
-                    action: 'Inizializzazione Inventario Hotel Vello d\'Oro',
-                    item: 'Inizializzazione'
-                }];
-                saveToLocalStorage();
-            }
-        }
-
-        function saveToLocalStorage() {
-            localStorage.setItem('vello_inventory_items', JSON.stringify(inventory));
-            localStorage.setItem('vello_inventory_logs', JSON.stringify(auditLogs));
-            updateLowStockBadge();
-        }
-
-        /* Sidebar Toggle Logic */
-        function toggleSidebar() {
-            const sidebar = document.getElementById('left-sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            const isHidden = sidebar.classList.contains('-translate-x-full');
-
-            if (isHidden) {
-                sidebar.classList.remove('-translate-x-full');
-                overlay.classList.remove('hidden');
-            } else {
-                closeSidebar();
-            }
-        }
-
-        function closeSidebar() {
-            const sidebar = document.getElementById('left-sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
-            sidebar.classList.add('-translate-x-full');
-            overlay.classList.add('hidden');
-        }
-
-        function toggleSubMenu(id) {
-            const el = document.getElementById(id);
-            const icon = document.getElementById('icon-' + id);
-            if (el.classList.contains('hidden')) {
-                el.classList.remove('hidden');
-                if (icon) icon.classList.add('rotate-180');
-            } else {
-                el.classList.add('hidden');
-                if (icon) icon.classList.remove('rotate-180');
-            }
-        }
-
-        /* Navigation Handler */
-        function navigateTo(dept, subcategory = 'all') {
-            currentDept = dept;
-            currentSubcategory = subcategory;
-            
-            // Highlight link in sidebar
-            document.querySelectorAll('.sidebar-nav-link').forEach(el => {
-                el.classList.remove('bg-slate-800', 'text-gold-400');
-            });
-
-            closeSidebar();
-            renderMainView();
-        }
-
-        /* Active User Badge & Switcher */
-        function renderUserBadge() {
-            const container = document.getElementById('user-badge-container');
-            const sidebarRole = document.getElementById('sidebar-user-role');
-            if (sidebarRole) sidebarRole.innerText = `${currentUser.role} (${currentUser.name.split(' ')[0]})`;
-
-            container.innerHTML = `
-                <div class="relative group">
-                    <button class="flex items-center space-x-2 text-xs text-slate-200 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700 hover:border-gold-500/50 transition-colors">
-                        <span class="w-2.5 h-2.5 rounded-full ${currentUser.badge}"></span>
-                        <span class="font-semibold hidden sm:inline">${currentUser.name}</span>
-                        <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
-                    </button>
-                    
-                    <!-- User Dropdown Switcher -->
-                    <div class="absolute right-0 mt-2 w-56 bg-navy-900 border border-slate-700 rounded-xl shadow-2xl hidden group-hover:block z-50 p-2 space-y-1">
-                        <p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold px-2 py-1">Cambia Ruolo Utente:</p>
-                        ${USERS.map(u => `
-                            <button onclick="switchUser(${u.id})" class="w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between text-slate-200 hover:bg-slate-800 ${u.id === currentUser.id ? 'bg-slate-800 font-bold text-gold-400' : ''}">
-                                <span>${u.name}</span>
-                                <span class="text-[10px] px-2 py-0.5 rounded ${u.badge}">${u.role}</span>
-                            </button>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }
-
-        function switchUser(userId) {
-            currentUser = USERS.find(u => u.id === userId);
-            renderUserBadge();
-            renderMainView();
-            showToast(`Ruolo cambiato in: ${currentUser.name}`);
-        }
-
-        /* Filter Toggle for Consumables */
-        function toggleConsumablesFilter() {
-            filterOnlyConsumable = !filterOnlyConsumable;
-            const btn = document.getElementById('btn-consumable-filter');
-            if (filterOnlyConsumable) {
-                btn.classList.add('bg-amber-100', 'border-amber-400', 'text-amber-900', 'font-bold');
-            } else {
-                btn.classList.remove('bg-amber-100', 'border-amber-400', 'text-amber-900', 'font-bold');
-            }
-            renderMainView();
-        }
-
-        function handleSearch(val) {
-            searchQuery = val.toLowerCase().trim();
-            renderMainView();
-        }
-
-        function renderMainView() {
-            updateBreadcrumbAndHeader();
-            updateMetrics();
-
-            const container = document.getElementById('main-view-container');
-
-            if (currentDept === 'dashboard') {
-                renderDashboardView(container);
-            } else if (currentDept === 'audit') {
-                renderAuditLogView(container);
-            } else if (currentDept === 'users') {
-                renderUsersManagementView(container);
-            } else {
-                renderTableView(container);
-            }
-        }
-
-        function updateBreadcrumbAndHeader() {
-            const deptLabel = document.getElementById('breadcrumb-dept');
-            const subWrap = document.getElementById('breadcrumb-sub-wrap');
-            const subLabel = document.getElementById('breadcrumb-sub');
-            const pageTitle = document.getElementById('page-title');
-            const pageDesc = document.getElementById('page-description');
-
-            if (currentDept === 'all') {
-                deptLabel.innerText = 'Tutti i Reparti';
-                pageTitle.innerText = 'Inventario Generale Hotel';
-                pageDesc.innerText = 'Tutti i materiali, le forniture e le attrezzature disponibili nelle varie strutture.';
-                subWrap.classList.add('hidden');
-            } else if (currentDept === 'low-stock') {
-                deptLabel.innerText = 'Avvisi Scorta';
-                pageTitle.innerText = 'Materiali Mancanti o in Sottoscorta';
-                pageDesc.innerText = 'Articoli da riordinare immediatamente per garantire il normale funzionamento dell\'hotel.';
-                subWrap.classList.add('hidden');
-            } else if (currentDept === 'dashboard') {
-                deptLabel.innerText = 'Dashboard';
-                pageTitle.innerText = 'Panoramica & Controllo Gestionale';
-                pageDesc.innerText = 'Metriche in tempo reale su stock, consumi e stato delle manutenzioni.';
-                subWrap.classList.add('hidden');
-            } else if (currentDept === 'audit') {
-                deptLabel.innerText = 'Registro';
-                pageTitle.innerText = 'Registro Attività & Prelievi (Audit Trail)';
-                pageDesc.innerText = 'Tracciamento completo degli accessi, prelievi e modifiche effettuate dal personale.';
-                subWrap.classList.add('hidden');
-            } else if (currentDept === 'users') {
-                deptLabel.innerText = 'Sicurezza';
-                pageTitle.innerText = 'Gestione Utenti e Autorizzazioni';
-                pageDesc.innerText = 'Profili registrati per il personale dell\'Hotel Vello d\'Oro.';
-                subWrap.classList.add('hidden');
-            } else {
-                const names = {
-                    manutenzione: 'Manutenzione & Servizi',
-                    housekeeping: 'Housekeeping & Piani',
-                    bar: 'Bar & Ristorazione',
-                    reception: 'Reception & Cancelleria'
-                };
-                deptLabel.innerText = names[currentDept] || currentDept;
-                pageTitle.innerText = names[currentDept] || currentDept;
-                
-                if (currentSubcategory !== 'all') {
-                    subWrap.classList.remove('hidden');
-                    subLabel.innerText = currentSubcategory;
-                    pageDesc.innerText = `Visualizzazione filtrata per la sottocategoria "${currentSubcategory}".`;
-                } else {
-                    subWrap.classList.add('hidden');
-                    pageDesc.innerText = `Gestione completa del reparto ${names[currentDept]}.`;
-                }
-            }
-        }
-
-        /* Filter helper */
-        function getFilteredItems() {
-            return inventory.filter(item => {
-                // Filter by Department
-                if (currentDept === 'low-stock') {
-                    if (item.quantity > item.minQuantity) return false;
-                } else if (currentDept !== 'all' && currentDept !== 'dashboard' && currentDept !== 'audit' && currentDept !== 'users') {
-                    if (item.department !== currentDept) return false;
-                }
-
-                // Filter by Subcategory
-                if (currentSubcategory !== 'all' && item.subcategory !== currentSubcategory) {
-                    return false;
-                }
-
-                // Filter by Consumable flag
-                if (filterOnlyConsumable && !item.isConsumable) return false;
-
-                // Filter by Search Query
-                if (searchQuery) {
-                    const q = searchQuery;
-                    const nameMatch = item.name.toLowerCase().includes(q);
-                    const subMatch = item.subcategory.toLowerCase().includes(q);
-                    const locMatch = item.location ? item.location.toLowerCase().includes(q) : false;
-                    if (!nameMatch && !subMatch && !locMatch) return false;
-                }
-
-                return true;
-            });
-        }
-
-        /* Metrics Calculations */
-        function updateMetrics() {
-            const filtered = getFilteredItems();
-            
-            // Total items
-            document.getElementById('metric-total-items').innerText = filtered.length;
-
-            // Low Stock Items Total
-            const lowStockCount = inventory.filter(i => i.quantity <= i.minQuantity).length;
-            document.getElementById('metric-low-stock').innerText = lowStockCount;
-
-            // Total Value of Current View
-            const totalVal = filtered.reduce((acc, i) => acc + (i.quantity * i.price), 0);
-            document.getElementById('metric-total-value').innerText = `€${totalVal.toFixed(2)}`;
-
-            // Active maintenance total
-            const maintenanceCount = inventory.filter(i => i.department === 'manutenzione').length;
-            document.getElementById('metric-maintenance-active').innerText = maintenanceCount;
-
-            // Banner Aggregator Summary
-            const totalPcs = filtered.reduce((acc, i) => acc + i.quantity, 0);
-            const bannerTitle = document.getElementById('subcat-banner-title');
-            const bannerSummary = document.getElementById('subcat-banner-summary');
-            
-            if (currentSubcategory !== 'all') {
-                bannerTitle.innerText = `VALORE COMMERCIALE SOTTOCATEGORIA: "${currentSubcategory.toUpperCase()}"`;
-            } else if (currentDept !== 'all' && currentDept !== 'low-stock') {
-                bannerTitle.innerText = `VALORE COMMERCIALE REPARTO: "${currentDept.toUpperCase()}"`;
-            } else {
-                bannerTitle.innerText = `VALORE COMMERCIALE TOTALE VISUALIZZATO`;
-            }
-
-            bannerSummary.innerText = `${filtered.length} Articoli (${totalPcs} Pezzi Complessivi) — Valore Totale: €${totalVal.toFixed(2)}`;
-        }
-
-        function updateLowStockBadge() {
-            const count = inventory.filter(i => i.quantity <= i.minQuantity).length;
-            const badge = document.getElementById('sidebar-low-stock-count');
-            if (badge) badge.innerText = count;
-        }
-
-        /* Render Main Inventory Table */
-        function renderTableView(container) {
-            const items = getFilteredItems();
-
-            if (items.length === 0) {
-                container.innerHTML = `
-                    <div class="p-12 text-center">
-                        <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
-                            <i class="fa-solid fa-box-open"></i>
-                        </div>
-                        <h4 class="text-base font-bold text-slate-700">Nessun articolo trovato</h4>
-                        <p class="text-xs text-slate-500 mt-1">Nessun elemento corrisponde ai filtri selezionati o alla ricerca.</p>
-                        <button onclick="openAddItemModal()" class="mt-4 px-4 py-2 bg-terracotta-600 text-white rounded-xl text-xs font-semibold">
-                            + Aggiungi Nuovo Articolo
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-
-            let html = `
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
-                                <th class="py-3 px-4">Articolo & Sottocategoria</th>
-                                <th class="py-3 px-4">Reparto</th>
-                                <th class="py-3 px-4 text-center">Disponibilità</th>
-                                <th class="py-3 px-4 text-right">Prezzo Unit.</th>
-                                <th class="py-3 px-4 text-right">Valore Tot.</th>
-                                <th class="py-3 px-4">Ubicazione</th>
-                                <th class="py-3 px-4 text-center">Azioni / Prelievo</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100 text-sm">
-            `;
-
-            items.forEach(item => {
-                const isLow = item.quantity <= item.minQuantity;
-                const itemTotalValue = (item.quantity * item.price).toFixed(2);
-
-                const deptBadges = {
-                    manutenzione: 'bg-amber-100 text-amber-800 border-amber-200',
-                    housekeeping: 'bg-sky-100 text-sky-800 border-sky-200',
-                    bar: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-                    reception: 'bg-indigo-100 text-indigo-800 border-indigo-200'
-                };
-
-                html += `
-                    <tr class="hover:bg-slate-50/80 transition-colors ${isLow ? 'bg-amber-50/30' : ''}">
-                        
-                        <!-- Item Name & Subcategory -->
-                        <td class="py-3.5 px-4">
-                            <div class="font-bold text-slate-800 flex items-center space-x-2">
-                                <span>${item.name}</span>
-                                ${item.isConsumable ? '<span class="bg-amber-100 text-amber-700 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-amber-200">Consumo</span>' : ''}
-                            </div>
-                            <div class="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
-                                <i class="fa-solid fa-tag text-[10px]"></i> ${item.subcategory}
-                            </div>
-                        </td>
-
-                        <!-- Department Badge -->
-                        <td class="py-3.5 px-4">
-                            <span class="text-xs font-semibold px-2.5 py-1 rounded-full border ${deptBadges[item.department] || 'bg-slate-100 text-slate-700'} capitalize">
-                                ${item.department}
-                            </span>
-                        </td>
-
-                        <!-- Stock / Quantity -->
-                        <td class="py-3.5 px-4 text-center">
-                            <div class="inline-flex flex-col items-center">
-                                <span class="font-bold text-base ${isLow ? 'text-red-600' : 'text-slate-800'}">
-                                    ${item.quantity} <span class="text-xs font-normal text-slate-500">${item.unit}</span>
-                                </span>
-                                ${isLow ? `
-                                    <span class="mt-0.5 inline-flex items-center gap-1 bg-red-100 text-red-700 font-bold text-[10px] px-2 py-0.5 rounded-full border border-red-200">
-                                        <i class="fa-solid fa-triangle-exclamation"></i> MANCANTE
-                                    </span>
-                                ` : `
-                                    <span class="text-[10px] text-slate-400">Min. ${item.minQuantity}</span>
-                                `}
-                            </div>
-                        </td>
-
-                        <!-- Price Unit -->
-                        <td class="py-3.5 px-4 text-right font-medium text-slate-600">
-                            €${item.price.toFixed(2)}
-                        </td>
-
-                        <!-- Total Value -->
-                        <td class="py-3.5 px-4 text-right font-bold text-slate-800">
-                            €${itemTotalValue}
-                        </td>
-
-                        <!-- Location -->
-                        <td class="py-3.5 px-4 text-xs text-slate-500">
-                            <span class="inline-flex items-center gap-1">
-                                <i class="fa-solid fa-location-dot text-slate-400"></i>
-                                ${item.location || 'Deposito Principale'}
-                            </span>
-                        </td>
-
-                        <!-- Action Buttons -->
-                        <td class="py-3.5 px-4 text-center">
-                            <div class="flex items-center justify-center space-x-1.5">
-                                
-                                <!-- Quick 1-Click Withdraw -->
-                                <button onclick="quickWithdrawOne('${item.id}')" title="Preleva 1 Pezzo subito" class="bg-amber-500 hover:bg-amber-600 text-white p-1.5 px-2.5 rounded-lg text-xs font-semibold shadow-sm transition-all active:scale-95 flex items-center space-x-1">
-                                    <i class="fa-solid fa-minus text-[10px]"></i>
-                                    <span>1 pz.</span>
-                                </button>
-
-                                <!-- Custom Withdraw Modal Trigger -->
-                                <button onclick="openWithdrawModal('${item.id}')" title="Prelievo Quantità Personalizzata" class="bg-slate-200 hover:bg-slate-300 text-slate-700 p-1.5 rounded-lg text-xs transition-colors">
-                                    <i class="fa-solid fa-hand-holding"></i>
-                                </button>
-
-                                <!-- Edit Item (Admin/Staff) -->
-                                <button onclick="editItem('${item.id}')" title="Modifica Articolo" class="bg-slate-100 hover:bg-slate-200 text-slate-600 p-1.5 rounded-lg text-xs transition-colors">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-
-                                <!-- Delete Item -->
-                                <button onclick="deleteItem('${item.id}')" title="Elimina Articolo" class="bg-red-50 hover:bg-red-100 text-red-600 p-1.5 rounded-lg text-xs transition-colors">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                            </div>
-                        </td>
-
-                    </tr>
-                `;
-            });
-
-            html += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
-
-            container.innerHTML = html;
-        }
-
-        /* Render Dashboard Analytic View */
-        function renderDashboardView(container) {
-            const lowStockItems = inventory.filter(i => i.quantity <= i.minQuantity);
-            
-            container.innerHTML = `
-                <div class="p-6 space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        
-                        <!-- Department Breakdown -->
-                        <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200">
-                            <h3 class="font-serif text-lg font-bold text-navy-900 mb-4 flex items-center gap-2">
-                                <i class="fa-solid fa-chart-pie text-terracotta-500"></i> Ripartizione Articoli per Reparto
-                            </h3>
-                            <div class="space-y-3">
-                                ${['manutenzione', 'housekeeping', 'bar', 'reception'].map(dept => {
-                                    const deptItems = inventory.filter(i => i.department === dept);
-                                    const totalVal = deptItems.reduce((acc, i) => acc + (i.quantity * i.price), 0);
-                                    const percent = inventory.length ? Math.round((deptItems.length / inventory.length) * 100) : 0;
-                                    return `
-                                        <div>
-                                            <div class="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-                                                <span class="capitalize">${dept} (${deptItems.length} articoli)</span>
-                                                <span>€${totalVal.toFixed(2)} (${percent}%)</span>
-                                            </div>
-                                            <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
-                                                <div class="bg-terracotta-500 h-2.5 rounded-full" style="width: ${percent}%"></div>
-                                            </div>
-                                        </div>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-
-                        <!-- Low Stock Critical List -->
-                        <div class="bg-amber-50/50 p-5 rounded-2xl border border-amber-200">
-                            <h3 class="font-serif text-lg font-bold text-amber-900 mb-4 flex items-center justify-between">
-                                <span class="flex items-center gap-2">
-                                    <i class="fa-solid fa-triangle-exclamation text-amber-600"></i> In Sottoscorta Critica
-                                </span>
-                                <span class="bg-amber-200 text-amber-800 text-xs px-2.5 py-0.5 rounded-full font-sans">${lowStockItems.length} Articoli</span>
-                            </h3>
-
-                            ${lowStockItems.length === 0 ? `
-                                <p class="text-xs text-slate-500 italic">Tutte le scorte dell'hotel sono attualmente a livello ottimale.</p>
-                            ` : `
-                                <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
-                                    ${lowStockItems.map(item => `
-                                        <div class="bg-white p-3 rounded-xl border border-amber-200 flex items-center justify-between shadow-sm">
-                                            <div>
-                                                <p class="font-bold text-xs text-slate-800">${item.name}</p>
-                                                <p class="text-[10px] text-slate-500">${item.department} • Min. ${item.minQuantity} pz</p>
-                                            </div>
-                                            <div class="text-right">
-                                                <span class="text-xs font-bold text-red-600 block">${item.quantity} ${item.unit}</span>
-                                                <button onclick="quickWithdrawOne('${item.id}')" class="text-[10px] text-amber-700 underline hover:text-amber-900 font-medium">Ordina / Preleva</button>
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            `}
-                        </div>
-
-                    </div>
-                </div>
-            `;
-        }
-
-        /* Render Audit Log View */
-        function renderAuditLogView(container) {
-            container.innerHTML = `
-                <div class="p-5">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-serif text-lg font-bold text-navy-900">Storico Attività & Registro Prelievi</h3>
-                        <span class="text-xs text-slate-400 font-mono">Totale eventi: ${auditLogs.length}</span>
-                    </div>
-
-                    ${auditLogs.length === 0 ? `
-                        <p class="text-xs text-slate-500 italic p-4">Nessuna attività registrata finora.</p>
-                    ` : `
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left text-xs border-collapse">
-                                <thead>
-                                    <tr class="bg-slate-50 text-slate-500 border-b border-slate-200 uppercase tracking-wider text-[10px]">
-                                        <th class="p-3">Data & Ora</th>
-                                        <th class="p-3">Utente & Ruolo</th>
-                                        <th class="p-3">Azione</th>
-                                        <th class="p-3">ArticoloCoinvolto</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-100">
-                                    ${auditLogs.map(log => `
-                                        <tr class="hover:bg-slate-50">
-                                            <td class="p-3 font-mono text-slate-500">${log.timestamp}</td>
-                                            <td class="p-3 font-semibold text-slate-700">
-                                                ${log.user} <span class="text-[10px] text-slate-400">(${log.role})</span>
-                                            </td>
-                                            <td class="p-3 text-slate-800">${log.action}</td>
-                                            <td class="p-3 font-medium text-terracotta-600">${log.item || '-'}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `}
-                </div>
-            `;
-        }
-
-        /* Render Users View */
-        function renderUsersManagementView(container) {
-            container.innerHTML = `
-                <div class="p-6">
-                    <h3 class="font-serif text-xl font-bold text-navy-900 mb-2">Gestione Ruoli & Personale Autorizzato</h3>
-                    <p class="text-xs text-slate-500 mb-6">Elenco degli utenti abilitati alle operazioni di magazzino per l'Hotel Vello d'Oro.</p>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        ${USERS.map(u => `
-                            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex items-center space-x-3 shadow-sm">
-                                <div class="w-10 h-10 rounded-full ${u.badge} flex items-center justify-center font-bold text-sm shadow">
-                                    ${u.name.charAt(0)}
-                                </div>
-                                <div>
-                                    <h4 class="font-bold text-sm text-slate-800">${u.name}</h4>
-                                    <p class="text-xs text-slate-500">Ruolo: <span class="font-semibold text-slate-700">${u.role}</span></p>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-        }
-
-        function openAddItemModal() {
-            document.getElementById('form-item-id').value = '';
-            document.getElementById('item-form').reset();
-            document.getElementById('modal-item-title').innerText = 'Aggiungi Nuovo Articolo / Servizio';
-            updateFormSubcategories();
-            document.getElementById('item-modal').classList.remove('hidden');
-        }
-
-        function closeItemModal() {
-            document.getElementById('item-modal').classList.add('hidden');
-        }
-
-        function updateFormSubcategories() {
-            const dept = document.getElementById('form-department').value;
-            const subSelect = document.getElementById('form-subcategory');
-            const options = SUBCATEGORIES[dept] || ['Generale'];
-            
-            subSelect.innerHTML = options.map(s => `<option value="${s}">${s}</option>`).join('');
-        }
-
-        function saveItem(event) {
-            event.preventDefault();
-            
-            const itemId = document.getElementById('form-item-id').value;
-            const name = document.getElementById('form-name').value.trim();
-            const department = document.getElementById('form-department').value;
-            const subcategory = document.getElementById('form-subcategory').value;
-            const quantity = parseInt(document.getElementById('form-quantity').value);
-            const minQuantity = parseInt(document.getElementById('form-min-quantity').value);
-            const price = parseFloat(document.getElementById('form-price').value);
-            const unit = document.getElementById('form-unit').value;
-            const location = document.getElementById('form-location').value.trim();
-            const isConsumable = document.getElementById('form-is-consumable').checked;
-
-            if (itemId) {
-                // Edit existing
-                const index = inventory.findIndex(i => i.id === itemId);
-                if (index !== -1) {
-                    inventory[index] = { ...inventory[index], name, department, subcategory, quantity, minQuantity, price, unit, location, isConsumable };
-                    logAuditAction(`Modificato articolo: ${name}`, name);
-                    showToast('Articolo aggiornato con successo');
-                }
-            } else {
-                // Add new
-                const newItem = {
-                    id: 'item-' + Date.now(),
-                    name,
-                    department,
-                    subcategory,
-                    quantity,
-                    minQuantity,
-                    price,
-                    unit,
-                    location,
-                    isConsumable
-                };
-                inventory.unshift(newItem);
-                logAuditAction(`Aggiunto nuovo articolo: ${name}`, name);
-                showToast('Nuovo articolo salvato nell\'inventario');
-            }
-
-            saveToLocalStorage();
-            closeItemModal();
-            renderMainView();
-        }
-
-        function editItem(id) {
-            const item = inventory.find(i => i.id === id);
-            if (!item) return;
-
-            document.getElementById('form-item-id').value = item.id;
-            document.getElementById('form-name').value = item.name;
-            document.getElementById('form-department').value = item.department;
-            updateFormSubcategories();
-            document.getElementById('form-subcategory').value = item.subcategory;
-            document.getElementById('form-quantity').value = item.quantity;
-            document.getElementById('form-min-quantity').value = item.minQuantity;
-            document.getElementById('form-price').value = item.price;
-            document.getElementById('form-unit').value = item.unit || 'Pezzi';
-            document.getElementById('form-location').value = item.location || '';
-            document.getElementById('form-is-consumable').checked = !!item.isConsumable;
-
-            document.getElementById('modal-item-title').innerText = 'Modifica Articolo';
-            document.getElementById('item-modal').classList.remove('hidden');
-        }
-
-        function deleteItem(id) {
-            const item = inventory.find(i => i.id === id);
-            if (!item) return;
-
-            if (confirm(`Sei sicuro di voler eliminare "${item.name}" dall'inventario?`)) {
-                inventory = inventory.filter(i => i.id !== id);
-                logAuditAction(`Eliminato articolo: ${item.name}`, item.name);
-                saveToLocalStorage();
-                renderMainView();
-                showToast('Articolo eliminato con successo');
-            }
-        }
-
-        /* 1-Click Quick Withdraw Function */
-        function quickWithdrawOne(id) {
-            const item = inventory.find(i => i.id === id);
-            if (!item) return;
-
-            if (item.quantity <= 0) {
-                showToast(`Impossibile prelevare: ${item.name} è esaurito!`, true);
-                return;
-            }
-
-            item.quantity -= 1;
-            logAuditAction(`Prelevato 1 pz. (Rapido)`, item.name);
-            saveToLocalStorage();
-            renderMainView();
-            showToast(`Prelevato 1 pz. di "${item.name}"`);
-        }
-
-        /* Custom Withdraw Modal Handlers */
-        function openWithdrawModal(id) {
-            const item = inventory.find(i => i.id === id);
-            if (!item) return;
-
-            document.getElementById('withdraw-item-id').value = item.id;
-            document.getElementById('withdraw-item-name').innerText = item.name;
-            document.getElementById('withdraw-item-stock').innerText = `Disponibilità attuale: ${item.quantity} ${item.unit}`;
-            document.getElementById('withdraw-qty').max = item.quantity;
-            document.getElementById('withdraw-qty').value = 1;
-            document.getElementById('withdraw-notes').value = '';
-
-            document.getElementById('withdraw-modal').classList.remove('hidden');
-        }
-
-        function closeWithdrawModal() {
-            document.getElementById('withdraw-modal').classList.add('hidden');
-        }
-
-        function confirmWithdrawal(event) {
-            event.preventDefault();
-            const id = document.getElementById('withdraw-item-id').value;
-            const qty = parseInt(document.getElementById('withdraw-qty').value);
-            const notes = document.getElementById('withdraw-notes').value.trim();
-
-            const item = inventory.find(i => i.id === id);
-            if (!item) return;
-
-            if (qty > item.quantity) {
-                showToast('La quantità inserita supera la disponibilità!', true);
-                return;
-            }
-
-            item.quantity -= qty;
-            const noteText = notes ? ` (Note: ${notes})` : '';
-            logAuditAction(`Prelevati ${qty} pz.${noteText}`, item.name);
-
-            saveToLocalStorage();
-            closeWithdrawModal();
-            renderMainView();
-            showToast(`Prelevati ${qty} ${item.unit} di "${item.name}"`);
-        }
-
-        /* Audit Logger */
-        function logAuditAction(action, itemName) {
-            const newLog = {
-                id: Date.now(),
-                timestamp: new Date().toLocaleString('it-IT'),
-                user: currentUser.name,
-                role: currentUser.role,
-                action: action,
-                item: itemName
-            };
-            auditLogs.unshift(newLog);
-            saveToLocalStorage();
-        }
-
-        /* CSV Exporter */
-        function exportDataCSV() {
-            let csvContent = "data:text/csv;charset=utf-8,ID;Nome;Reparto;Sottocategoria;Quantita;ScortaMinima;Prezzo;ValoreTotale;Ubicazione\n";
-            
-            inventory.forEach(item => {
-                const total = (item.quantity * item.price).toFixed(2);
-                csvContent += `"${item.id}";"${item.name}";"${item.department}";"${item.subcategory}";${item.quantity};${item.minQuantity};${item.price};${total};"${item.location || ''}"\n`;
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Inventario_Hotel_Vello_d_Oro_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast('Esportazione CSV completata');
-        }
-
-        /* Toast Notifications */
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toast-icon');
-            const msg = document.getElementById('toast-msg');
-
-            msg.innerText = message;
-            if (isError) {
-                icon.className = 'fa-solid fa-triangle-exclamation text-red-400 text-lg';
-            } else {
-                icon.className = 'fa-solid fa-circle-check text-emerald-400 text-lg';
-            }
-
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
-        }
-    </script>
+          </td>
+          <td class="text-center fw-bold fs-6">${item.qty}</td>
+          <td class="text-center text-muted">${item.minThreshold}</td>
+          <td class="text-end">€ ${parseFloat(item.price).toFixed(2)}</td>
+          <td class="text-end fw-bold">€ ${totalVal.toFixed(2)}</td>
+          <td class="text-center">
+            ${status === 'OUT' ? '<span class="badge badge-out">MANCANTE</span>' : 
+              status === 'REORDER' ? '<span class="badge badge-reorder">IN SCADENZA</span>' : 
+              '<span class="badge badge-ok">OK</span>'}
+          </td>
+          <td class="text-end pe-3">
+            <button class="btn btn-withdraw btn-sm me-1" onclick="withdrawOne(${item.id})" title="Preleva 1 Pz per Manutenzione">
+              <i class="fa-solid fa-hand-holding me-1"></i> Preleva 1
+            </button>
+            ${currentUser && currentUser.role === 'Amministratore' ? `
+              <button class="btn btn-outline-primary btn-sm me-1" onclick="editItem(${item.id})"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn btn-outline-danger btn-sm" onclick="deleteItem(${item.id})"><i class="fa-solid fa-trash"></i></button>
+            ` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Update Summaries
+      document.getElementById('subgroupTotalValue').innerText = `€ ${totalSubgroupValue.toFixed(2)}`;
+      document.getElementById('statTotalItems').innerText = itemCount;
+      document.getElementById('statReorderItems').innerText = totalReorder;
+      document.getElementById('statConsumablesCount').innerText = totalConsumables;
+      document.getElementById('statTotalValue').innerText = `€ ${totalValuation.toFixed(2)}`;
+      document.getElementById('badgeReorderCount').innerText = totalReorder;
+      document.getElementById('badgeCountAll').innerText = items.length;
+    }
+
+    // WITHDRAW / STOCK ACTION
+    function withdrawOne(id) {
+      const item = items.find(x => x.id === id);
+      if (item && item.qty > 0) {
+        item.qty--;
+        saveData();
+        renderTable();
+      } else {
+        alert("Attenzione: Oggetto mancante in magazzino!");
+      }
+    }
+
+    // SAVE ITEM
+    function openNewItemModal() {
+      document.getElementById('itemForm').reset();
+      document.getElementById('itemId').value = '';
+      populateModalSubcats();
+      new bootstrap.Modal(document.getElementById('itemModal')).show();
+    }
+
+    function saveItem() {
+      const id = document.getElementById('itemId').value;
+      const name = document.getElementById('itemName').value;
+      const dept = document.getElementById('itemDept').value;
+      const subcat = document.getElementById('itemSubcat').value;
+      const qty = parseInt(document.getElementById('itemQty').value);
+      const minThreshold = parseInt(document.getElementById('itemMinThreshold').value);
+      const price = parseFloat(document.getElementById('itemPrice').value);
+      const isConsumable = document.getElementById('itemIsConsumable').value === 'true';
+      const notes = document.getElementById('itemNotes').value;
+
+      if (!name) return alert("Inserisci il nome dell'oggetto");
+
+      if (id) {
+        // Edit
+        const item = items.find(x => x.id == id);
+        Object.assign(item, { name, dept, subcat, qty, minThreshold, price, isConsumable, notes });
+      } else {
+        // Create
+        items.push({ id: Date.now(), name, dept, subcat, qty, minThreshold, price, isConsumable, notes });
+      }
+
+      saveData();
+      bootstrap.Modal.getInstance(document.getElementById('itemModal')).hide();
+      renderTable();
+    }
+
+    function editItem(id) {
+      const item = items.find(x => x.id === id);
+      if (!item) return;
+      document.getElementById('itemId').value = item.id;
+      document.getElementById('itemName').value = item.name;
+      document.getElementById('itemDept').value = item.dept;
+      populateModalSubcats();
+      document.getElementById('itemSubcat').value = item.subcat;
+      document.getElementById('itemQty').value = item.qty;
+      document.getElementById('itemMinThreshold').value = item.minThreshold;
+      document.getElementById('itemPrice').value = item.price;
+      document.getElementById('itemIsConsumable').value = item.isConsumable ? 'true' : 'false';
+      document.getElementById('itemNotes').value = item.notes || '';
+      new bootstrap.Modal(document.getElementById('itemModal')).show();
+    }
+
+    function deleteItem(id) {
+      if (confirm("Sei sicuro di voler eliminare questo oggetto dall'inventario?")) {
+        items = items.filter(x => x.id !== id);
+        saveData();
+        renderTable();
+      }
+    }
+
+    // UTILS
+    function populateSubcatDropdowns() {
+      const sel = document.getElementById('filterSubcategory');
+      sel.innerHTML = '<option value="ALL">Tutte le Sotto-Categorie</option>';
+      subcategories
+        .filter(s => currentDeptFilter === 'ALL' || s.dept === currentDeptFilter)
+        .forEach(s => {
+          sel.innerHTML += `<option value="${s.name}">${s.name}</option>`;
+        });
+    }
+
+    function populateModalSubcats() {
+      const dept = document.getElementById('itemDept').value;
+      const sel = document.getElementById('itemSubcat');
+      sel.innerHTML = '';
+      subcategories.filter(s => s.dept === dept).forEach(s => {
+        sel.innerHTML += `<option value="${s.name}">${s.name}</option>`;
+      });
+    }
+
+    function saveData() {
+      localStorage.setItem('vello_items', JSON.stringify(items));
+    }
+
+    function exportCSV() {
+      let csv = 'Nome,Reparto,SottoCategoria,Quantita,ScortaMinima,PrezzoUnitario,ValoreTotale\n';
+      items.forEach(i => {
+        csv += `"${i.name}","${i.dept}","${i.subcat}",${i.qty},${i.minThreshold},${i.price},${i.qty * i.price}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', `Inventario_Hotel_Vello_d_Oro.csv`);
+      a.click();
+    }
+  </script>
 </body>
 </html>
